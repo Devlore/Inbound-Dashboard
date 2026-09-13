@@ -1,0 +1,804 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Track inbound freight cases, pallets, error percentages, and cases per hour by trailer door and reporting period.">
+  <title>Inbound Freight Door Performance</title>
+  <style>
+    :root {
+      --navy: #041522;
+      --navy-2: #075ca8;
+      --blue: #168ee0;
+      --blue-dark: #59b9f4;
+      --yellow: #ffc220;
+      --green: #45d39a;
+      --red: #ff7a70;
+      --ink: #f5f8fb;
+      --muted: #9db2c2;
+      --line: #254860;
+      --panel: #0c273b;
+      --page: #061722;
+      --soft: #0a2132;
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+    html { color-scheme: dark; font-family: Inter, Aptos, "Segoe UI", Arial, sans-serif; background: var(--page); }
+    body { margin: 0; color: var(--ink); background: radial-gradient(circle at 50% -120px, #0b4770 0, #071d2c 38%, #061722 72%); }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+    .topbar {
+      min-height: 84px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 22px;
+      padding: 15px clamp(18px, 3vw, 50px);
+      color: white;
+      background: #0071dc;
+      border-bottom: 4px solid var(--yellow);
+      box-shadow: 0 8px 30px rgba(0,0,0,.28);
+    }
+    .brand, .top-actions, .period-heading, .save-status, .summary { display: flex; align-items: center; }
+    .brand { gap: 13px; }
+    .brand-mark { display: grid; place-items: center; width: 48px; height: 48px; border: 1px solid rgba(255,255,255,.2); border-radius: 50%; background: #0055a5; color: var(--yellow); }
+    .brand-mark svg { width: 28px; height: 28px; }
+    .eyebrow { margin: 0 0 3px; color: #78bff1; font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    .topbar .eyebrow { color: #d7ebff; }
+    h1, h2, p { margin-top: 0; }
+    h1 { margin-bottom: 0; font-size: clamp(20px, 2vw, 28px); line-height: 1.05; letter-spacing: -.025em; }
+    h2 { margin-bottom: 0; font-size: 20px; letter-spacing: -.02em; }
+    .top-actions { gap: 10px; }
+    .date-wrap { display: flex; align-items: center; gap: 8px; color: #e0effc; }
+    .date-wrap svg { width: 18px; height: 18px; }
+    input[type="date"] { color-scheme: dark; }
+    .date-wrap input { width: 150px; height: 38px; padding: 0 9px; border: 1px solid rgba(255,255,255,.35); border-radius: 20px; color: white; background: #0057ad; }
+    .save-status { min-width: 90px; justify-content: center; gap: 6px; color: #e0effc; font-size: 12px; }
+    .save-status svg { width: 16px; height: 16px; }
+    .save-status.flash { color: #b6f5db; }
+    .clear-btn { height: 38px; display: inline-flex; align-items: center; gap: 7px; padding: 0 14px; border: 1px solid rgba(255,255,255,.4); border-radius: 20px; color: white; background: #0057ad; font-size: 13px; font-weight: 700; }
+    .clear-btn:hover { background: #00488f; }
+    .clear-btn svg { width: 15px; height: 15px; }
+
+    .workspace { width: min(1680px, calc(100% - 32px)); margin: 0 auto; padding: 24px 0 30px; }
+    .period-strip, .chart-card, .entry-card { border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); box-shadow: 0 10px 28px rgba(0,0,0,.24); }
+    .period-strip { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 13px 16px; }
+    .period-heading { gap: 10px; }
+    .period-heading svg { width: 22px; height: 22px; color: var(--yellow); }
+    .period-heading strong { display: block; font-size: 13px; }
+    .period-heading small { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; }
+    .period-tabs { display: grid; grid-template-columns: repeat(4, minmax(66px, 94px)); gap: 5px; padding: 4px; border: 1px solid #1f4158; border-radius: 22px; background: #061a29; }
+    .period-controls { display: flex; align-items: center; gap: 12px; }
+    .hours-control { display: flex; align-items: center; gap: 8px; color: #bfd0dd; font-size: 11px; font-weight: 800; white-space: nowrap; }
+    .hours-control input { width: 72px; height: 36px; padding: 4px 8px; border: 1px solid #31556c; border-radius: 18px; color: var(--ink); background: #061a29; font-weight: 800; font-variant-numeric: tabular-nums; }
+    .hours-control input:focus { outline: 3px solid rgba(0,113,220,.34); border-color: #3ba2ff; }
+    .hours-control.hidden { display: none; }
+    .period-tab { border: 0; border-radius: 18px; padding: 9px 12px; color: #9fb5c5; background: transparent; font-size: 13px; font-weight: 800; }
+    .period-tab:hover { color: white; background: #12334a; }
+    .period-tab.active { color: white; background: #0071dc; box-shadow: 0 3px 10px rgba(0,113,220,.38); }
+    .period-dot { display: inline-block; width: 6px; height: 6px; margin-left: 7px; border-radius: 50%; background: #567187; vertical-align: middle; }
+    .period-dot.filled { background: #45d39a; }
+    .period-tab.active .period-dot { background: #cde9ff; }
+    .period-tab.active .period-dot.filled { background: #b6f5db; }
+
+    .validation { display: none; align-items: center; gap: 8px; margin-top: 12px; padding: 9px 12px; border: 1px solid #8d403d; border-radius: 9px; color: #ffaaa3; background: #3a1d20; font-size: 13px; font-weight: 700; }
+    .validation.show { display: flex; }
+    .validation svg { width: 18px; height: 18px; }
+
+    .charts-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 16px; }
+    .chart-card { min-width: 0; overflow: hidden; }
+    .card-head { min-height: 82px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 17px 18px 12px; border-bottom: 1px solid #23445b; background: linear-gradient(180deg, #102f47, #0c273b); }
+    .card-head-right { display: flex; align-items: flex-start; gap: 14px; }
+    .fullscreen-btn { width: 34px; height: 34px; display: inline-grid; place-items: center; flex: 0 0 auto; padding: 0; border: 1px solid #36749f; border-radius: 50%; color: #dcefff; background: #083e68; }
+    .fullscreen-btn:hover { color: white; border-color: #55b9f4; background: #075ca8; }
+    .fullscreen-btn:focus-visible { outline: 3px solid rgba(0,113,220,.42); outline-offset: 2px; }
+    .fullscreen-btn svg { width: 15px; height: 15px; }
+    .summary { gap: 12px; }
+    .metric { min-width: 55px; text-align: right; }
+    .metric span { display: block; color: #90aabe; font-size: 9px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .metric strong { display: block; margin-top: 3px; color: #f7fbff; font-size: 17px; line-height: 1; font-variant-numeric: tabular-nums; }
+    .metric.alert strong { color: var(--red); }
+    .chart-area { position: relative; min-height: 390px; padding: 8px 8px 3px; }
+    .chart-area svg { display: block; width: 100%; height: auto; min-height: 370px; }
+    .chart-empty { position: absolute; left: 50%; top: 42%; width: 255px; transform: translate(-50%, -50%); padding: 10px 13px; border: 1px solid #315168; border-radius: 9px; color: #adc0cf; background: rgba(5,24,37,.95); text-align: center; font-size: 11px; pointer-events: none; }
+    .case-bar { fill: var(--blue); }
+    .case-bar:hover { fill: var(--blue-dark); }
+    .pallet-bar { fill: var(--yellow); }
+    .pallet-bar:hover { fill: #ffd458; }
+    .grid-line { stroke: #23445a; stroke-width: 1; stroke-dasharray: 4 5; }
+    .axis-line { stroke: #4a667a; stroke-width: 1.2; }
+    .axis-label { fill: #9bb0c0; font-size: 11px; }
+    .axis-label.pallet-axis { fill: #ffd15a; }
+    .axis-title { fill: #b3c7d5; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .axis-title.pallet-axis { fill: #ffd15a; }
+    .door-label { fill: #f6fbff; font-size: 15px; font-weight: 850; }
+    .error-label { fill: #a4b8c8; font-size: 12px; font-weight: 800; }
+    .error-label.has-error { fill: var(--red); }
+    .pallet-label { fill: #ffd15a; font-size: 12px; font-weight: 800; }
+    .cph-label { fill: var(--blue-dark); font-size: 12px; font-weight: 800; }
+    .associate-label { fill: #f5f8fb; font-size: 10px; font-weight: 750; }
+    .bar-value { fill: #80caf8; font-size: 10px; font-weight: 800; }
+    .pallet-bar-value { fill: #ffd15a; font-size: 10px; font-weight: 850; }
+    .chart-legend { fill: #b7cbd9; font-size: 10px; font-weight: 750; }
+
+    .entry-card { margin-top: 16px; overflow: hidden; }
+    .entry-head { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 16px 18px; border-bottom: 1px solid #23445b; background: #102f47; }
+    .entry-head > p { max-width: 500px; margin: 0; color: #a7bbc9; text-align: right; font-size: 12px; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    th, td { padding: 10px 16px; border-bottom: 1px solid #1d3c52; text-align: left; }
+    thead th { color: #a7bdcc; background: #071d2d; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
+    tbody tr:hover { background: #102f47; }
+    tbody tr.invalid { background: #321c21; }
+    tfoot th, tfoot td { padding-top: 13px; padding-bottom: 13px; border-top: 2px solid #0071dc; border-bottom: 0; color: #f4f9fd; background: #093452; font-size: 13px; font-weight: 850; font-variant-numeric: tabular-nums; }
+    tfoot th { text-transform: uppercase; letter-spacing: .06em; }
+    .door-badge { min-width: 56px; height: 32px; display: inline-grid; place-items: center; padding: 0 10px; border-radius: 16px; color: white; background: #0071dc; font-size: 15px; letter-spacing: .025em; }
+    .notes-cell { width: 68px; }
+    .notes-toggle { width: 36px; height: 36px; display: inline-grid; place-items: center; border: 1px solid #31566e; border-radius: 50%; color: #91a9ba; background: #061a29; cursor: pointer; transition: border-color .15s ease, color .15s ease, background .15s ease; }
+    .notes-toggle:hover, .notes-toggle[aria-expanded="true"] { color: white; border-color: #3ba2ff; background: #0b4f82; }
+    .notes-toggle.has-note { color: #ffc220; border-color: #8d6810; }
+    .notes-toggle svg { width: 18px; height: 18px; }
+    .notes-row[hidden] { display: none; }
+    .notes-row td { padding: 0 16px 14px; background: #0b2639; }
+    .notes-panel { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: end; padding: 14px; border: 1px solid #31566e; border-radius: 12px; background: #061a29; box-shadow: inset 3px 0 0 #ffc220; }
+    .notes-field { display: grid; gap: 7px; color: #a7bdcc; font-size: 11px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+    .notes-input { width: 100%; min-height: 88px; resize: vertical; padding: 10px 12px; border: 1px solid #31566e; border-radius: 10px; color: var(--ink); background: #041520; font: 600 13px/1.45 Inter, system-ui, sans-serif; }
+    .notes-input::placeholder { color: #6f899b; }
+    .notes-input:focus { outline: 3px solid rgba(0,113,220,.34); border-color: #3ba2ff; }
+    .notes-close { min-height: 38px; padding: 0 16px; border: 1px solid #3ba2ff; border-radius: 19px; color: white; background: #075ca8; font-weight: 800; cursor: pointer; }
+    .notes-close:hover { background: #0071dc; }
+    .number-input { width: min(170px, 100%); height: 36px; padding: 4px 10px; border: 1px solid #31566e; border-radius: 18px; color: var(--ink); background: #061a29; font-weight: 750; font-variant-numeric: tabular-nums; }
+    .number-input:focus { outline: 3px solid rgba(0,113,220,.34); border-color: #3ba2ff; }
+    .number-input[aria-invalid="true"] { border-color: var(--red); outline-color: rgba(200,69,53,.2); }
+    .associate-input { width: min(220px, 100%); height: 36px; padding: 4px 12px; border: 1px solid #31566e; border-radius: 18px; color: var(--ink); background: #061a29; font-weight: 700; }
+    .associate-input::placeholder { color: #6f899b; }
+    .associate-input:focus { outline: 3px solid rgba(0,113,220,.34); border-color: #3ba2ff; }
+    .rate-pill { min-width: 65px; display: inline-block; padding: 6px 8px; border: 1px solid #2b4e65; border-radius: 999px; color: #adc0cf; background: #071d2d; text-align: center; font-size: 12px; font-weight: 850; font-variant-numeric: tabular-nums; }
+    .rate-pill.has-error { color: #ffaaa3; border-color: #713a3b; background: #321c21; }
+    .cph-pill { color: #83ccf8; border-color: #155786; background: #082c47; }
+    footer { padding: 0 20px 28px; color: #7892a5; text-align: center; font-size: 11px; }
+
+    .toast { position: fixed; right: 18px; bottom: 18px; z-index: 10; transform: translateY(80px); padding: 10px 14px; border: 1px solid #338fdc; border-radius: 18px; color: white; background: #075ca8; box-shadow: 0 8px 24px rgba(0,0,0,.35); opacity: 0; transition: .2s ease; font-size: 12px; font-weight: 700; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    .chart-card:fullscreen { width: 100vw; height: 100vh; display: flex; flex-direction: column; border: 0; border-radius: 0; background: var(--panel); }
+    .chart-card:fullscreen .card-head { flex: 0 0 auto; padding: 20px 28px; }
+    .chart-card:fullscreen .chart-area { min-height: 0; flex: 1 1 auto; display: flex; padding: 16px 28px 24px; }
+    .chart-card:fullscreen .chart-area svg { width: 100%; height: 100%; min-height: 0; }
+
+    @media (max-width: 1100px) {
+      .charts-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 760px) {
+      .topbar, .period-strip, .entry-head { align-items: stretch; flex-direction: column; }
+      .top-actions { flex-wrap: wrap; }
+      .date-wrap { flex: 1; }
+      .period-tabs { width: 100%; grid-template-columns: repeat(4, 1fr); }
+      .period-controls { align-items: stretch; flex-direction: column; }
+      .hours-control { justify-content: flex-end; }
+      .card-head { flex-direction: column; }
+      .card-head-right { width: 100%; align-items: flex-end; flex-wrap: wrap; }
+      .fullscreen-btn { margin-left: auto; }
+      .summary { width: 100%; justify-content: space-between; }
+      .metric { text-align: left; }
+      .entry-head > p { text-align: left; }
+      .workspace { width: calc(100% - 20px); padding-top: 10px; }
+      th, td { padding: 9px 8px; }
+      table { min-width: 1020px; }
+    }
+    @media print {
+      :root { --ink: #10273c; --panel: #ffffff; --line: #d2dde5; }
+      body { color: var(--ink); background: white; }
+      .topbar { color: var(--ink); background: white; border: 0; box-shadow: none; padding: 8px 0 12px; }
+      .brand-mark, .top-actions, .period-strip, .entry-card, footer { display: none !important; }
+      .topbar .eyebrow { color: var(--muted); }
+      .workspace { width: 100%; padding: 0; }
+      .charts-grid { grid-template-columns: 1fr; }
+      .chart-card { break-inside: avoid; box-shadow: none; margin-bottom: 12px; }
+      .card-head { color: #10273c; background: white; border-color: #d2dde5; }
+      .metric strong { color: #173b55; }
+      .grid-line { stroke: #dfe7ed; }
+      .axis-line { stroke: #bccad5; }
+      .axis-label, .axis-title, .chart-legend { fill: #607686; }
+      .axis-label.pallet-axis, .axis-title.pallet-axis, .pallet-label, .pallet-bar-value { fill: #8d6810; }
+      .door-label { fill: #294a64; }
+      .error-label { fill: #718096; }
+      .associate-label { fill: #294a64; }
+    }
+    @media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 2.5v4"/><path d="m20 7-3.5 2"/><path d="m20 17-3.5-2"/><path d="M12 21.5v-4"/><path d="m4 17 3.5-2"/><path d="m4 7 3.5 2"/></svg>
+      </div>
+      <div><p class="eyebrow">Inbound operations</p><h1>Inbound Freight Door Performance</h1></div>
+    </div>
+    <div class="top-actions">
+      <label class="date-wrap">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>
+        <span class="sr-only">Work date</span>
+        <input id="workDate" type="date">
+      </label>
+      <div id="saveStatus" class="save-status" aria-live="polite">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+        <span>Auto-saved</span>
+      </div>
+      <button id="clearDay" class="clear-btn" type="button">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+        Clear day
+      </button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <section class="period-strip" aria-label="Reporting period selection">
+      <div class="period-heading">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5h6M9 9h6M9 13h4"/><rect x="5" y="3" width="14" height="18" rx="2"/></svg>
+        <div><strong>Reading checkpoint</strong><small id="checkpointHelp">SOS establishes the second-shift starting point.</small></div>
+      </div>
+      <div class="period-controls">
+        <div id="periodTabs" class="period-tabs" role="tablist" aria-label="Reporting periods"></div>
+        <label id="hoursControl" class="hours-control">Chunk hours <input id="periodHours" type="number" min="0" step="0.25" inputmode="decimal" placeholder="0"></label>
+      </div>
+    </section>
+
+    <div id="validation" class="validation" role="alert">
+      <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 17h.01"/></svg>
+      <span></span>
+    </div>
+
+    <section class="charts-grid" aria-label="Freight performance charts">
+      <article id="periodCard" class="chart-card">
+        <div class="card-head">
+          <div><p class="eyebrow">Current chunk</p><h2 id="periodChartTitle">SOS performance</h2></div>
+          <div class="card-head-right">
+            <div id="periodSummary" class="summary"></div>
+            <button class="fullscreen-btn" type="button" data-fullscreen-target="periodCard" aria-label="Show current chunk chart full screen">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg>
+            </button>
+          </div>
+        </div>
+        <div id="periodChart" class="chart-area"></div>
+      </article>
+
+      <article id="dayCard" class="chart-card">
+        <div class="card-head">
+          <div><p class="eyebrow">Since SOS baseline</p><h2>Second-shift total</h2></div>
+          <div class="card-head-right">
+            <div id="daySummary" class="summary"></div>
+            <button class="fullscreen-btn" type="button" data-fullscreen-target="dayCard" aria-label="Show second-shift total chart full screen">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg>
+            </button>
+          </div>
+        </div>
+        <div id="dayChart" class="chart-area"></div>
+      </article>
+    </section>
+
+    <section class="entry-card">
+      <div class="entry-head">
+        <div><p class="eyebrow">Data entry</p><h2 id="entryTitle">SOS door counts</h2></div>
+        <p id="entryHelp">Enter first-shift cumulative readings. These establish the baseline and are excluded from production totals.</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Door</th><th class="notes-cell">Notes</th><th>Associate</th><th>Pallets reading</th><th>Cases reading</th><th>Errors reading</th><th>Period error %</th><th>Period CPH</th></tr></thead>
+          <tbody id="entryRows"></tbody>
+          <tfoot id="entryTotals"></tfoot>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer>Data stays in this browser and is not sent anywhere.</footer>
+  <div id="toast" class="toast" role="status" aria-live="polite">Day cleared</div>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const DOORS = ['166', '167', '168', '169', '170', '171', '174', '175', '176'];
+      const PERIODS = ['SOS', 'P1', 'P2', 'EOS'];
+      const STORAGE_KEY = 'freight-door-performance-v2';
+      let activePeriod = 'SOS';
+      let workDate = today();
+      let allDates = loadAllDates();
+      let saveTimer;
+
+      const $ = (id) => document.getElementById(id);
+
+      function today() {
+        const now = new Date();
+        return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+      }
+
+      function blankDay() {
+        const day = { _hours: {} };
+        PERIODS.forEach(period => {
+          day._hours[period] = 0;
+          day[period] = {};
+          DOORS.forEach(door => day[period][door] = { associate: '', notes: '', cases: 0, pallets: 0, errors: 0 });
+        });
+        return day;
+      }
+
+      function normalizeDay(raw) {
+        const day = blankDay();
+        PERIODS.forEach(period => {
+          day._hours[period] = Math.max(0, Number(raw && raw._hours && raw._hours[period]) || 0);
+          DOORS.forEach(door => {
+            const reading = raw && raw[period] && raw[period][door];
+            if (reading) {
+              day[period][door] = {
+                associate: typeof reading.associate === 'string' ? reading.associate.slice(0, 80) : '',
+                notes: typeof reading.notes === 'string' ? reading.notes.slice(0, 1000) : '',
+                cases: Math.max(0, Math.floor(Number(reading.cases) || 0)),
+                pallets: Math.max(0, Math.floor(Number(reading.pallets) || 0)),
+                errors: Math.max(0, Math.floor(Number(reading.errors) || 0))
+              };
+            }
+          });
+        });
+        return day;
+      }
+
+      function loadAllDates() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+          return saved && typeof saved === 'object' ? saved : {};
+        } catch (_) { return {}; }
+      }
+
+      function currentDay() {
+        if (!allDates[workDate]) allDates[workDate] = blankDay();
+        allDates[workDate] = normalizeDay(allDates[workDate]);
+        return allDates[workDate];
+      }
+
+      function save() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(allDates));
+          $('saveStatus').classList.add('flash');
+          $('saveStatus').querySelector('span').textContent = 'Saved';
+          clearTimeout(saveTimer);
+          saveTimer = setTimeout(() => {
+            $('saveStatus').classList.remove('flash');
+            $('saveStatus').querySelector('span').textContent = 'Auto-saved';
+          }, 900);
+        } catch (_) {
+          $('saveStatus').querySelector('span').textContent = 'Save unavailable';
+        }
+      }
+
+      function pct(errors, cases) { return cases > 0 ? errors / cases * 100 : 0; }
+      function pctText(value) { return value === 0 ? '0.0%' : (value < .1 ? value.toFixed(2) : value.toFixed(1)) + '%'; }
+      function fmt(value) { return Number(value).toLocaleString(); }
+      function escapeText(value) { return String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+      function periodRows(period) {
+        const day = currentDay();
+        const hours = day._hours[period];
+        const periodIndex = PERIODS.indexOf(period);
+        return DOORS.map(door => {
+          const reading = day[period][door];
+          const baseline = period === 'SOS';
+          let previous = reading;
+          if (!baseline) {
+            for (let index = periodIndex - 1; index >= 0; index--) {
+              const candidate = day[PERIODS[index]][door];
+              if (index === 0 || candidate.cases > 0 || candidate.pallets > 0 || candidate.errors > 0) {
+                previous = candidate;
+                break;
+              }
+            }
+          }
+          const effectiveCases = !baseline && reading.cases === 0 && previous.cases > 0 ? previous.cases : reading.cases;
+          const effectivePallets = !baseline && reading.pallets === 0 && previous.pallets > 0 ? previous.pallets : reading.pallets;
+          const effectiveErrors = !baseline && reading.errors === 0 && previous.errors > 0 ? previous.errors : reading.errors;
+          const caseDifference = baseline ? 0 : effectiveCases - previous.cases;
+          const palletDifference = baseline ? 0 : effectivePallets - previous.pallets;
+          const errorDifference = baseline ? 0 : effectiveErrors - previous.errors;
+          const cases = Math.max(0, caseDifference);
+          const pallets = Math.max(0, palletDifference);
+          const errors = Math.max(0, errorDifference);
+          const invalidDelta = !baseline && (caseDifference < 0 || palletDifference < 0 || errorDifference < 0);
+          const invalid = baseline ? reading.errors > reading.cases : invalidDelta || errors > cases;
+          return {
+            door,
+            associate: reading.associate,
+            notes: reading.notes,
+            rawCases: reading.cases,
+            rawPallets: reading.pallets,
+            rawErrors: reading.errors,
+            cases,
+            pallets,
+            errors,
+            hours: baseline ? 0 : hours,
+            invalid,
+            errorRate: pct(errors, cases),
+            cph: !baseline && hours > 0 ? cases / hours : 0
+          };
+        });
+      }
+
+      function dayRows() {
+        const day = currentDay();
+        const hours = PERIODS.slice(1).reduce((sum, period) => sum + day._hours[period], 0);
+        return DOORS.map(door => {
+          const baseline = day.SOS[door];
+          let latestCases = baseline.cases;
+          let latestPallets = baseline.pallets;
+          let latestErrors = baseline.errors;
+          PERIODS.slice(1).forEach(period => {
+            const reading = day[period][door];
+            if (reading.cases > 0) latestCases = reading.cases;
+            if (reading.pallets > 0) latestPallets = reading.pallets;
+            if (reading.errors > 0) latestErrors = reading.errors;
+          });
+          const caseDifference = latestCases - baseline.cases;
+          const palletDifference = latestPallets - baseline.pallets;
+          const errorDifference = latestErrors - baseline.errors;
+          const cases = Math.max(0, caseDifference);
+          const pallets = Math.max(0, palletDifference);
+          const errors = Math.max(0, errorDifference);
+          return { door, cases, pallets, errors, hours, invalid: caseDifference < 0 || palletDifference < 0 || errorDifference < 0 || errors > cases, errorRate: pct(errors, cases), cph: hours > 0 ? cases / hours : 0 };
+        });
+      }
+
+      function totals(rows) {
+        return rows.reduce((sum, row) => ({ cases: sum.cases + row.cases, pallets: sum.pallets + row.pallets, errors: sum.errors + row.errors }), { cases: 0, pallets: 0, errors: 0 });
+      }
+
+      function metricHtml(label, value, alert) {
+        return `<div class="metric${alert ? ' alert' : ''}"><span>${label}</span><strong>${value}</strong></div>`;
+      }
+
+      function renderSummary(target, rows, hours) {
+        const total = totals(rows);
+        target.innerHTML = metricHtml('Total cases', fmt(total.cases), false) +
+          metricHtml('Total pallets', fmt(total.pallets), false) +
+          metricHtml('Errors', fmt(total.errors), total.errors > 0) +
+          metricHtml('Error rate', pctText(pct(total.errors, total.cases)), total.errors > 0) +
+          metricHtml('Cases/hour', hours > 0 ? fmt(Math.round(total.cases / hours)) : '—', false);
+      }
+
+      function niceMax(value) {
+        if (value <= 0) return 100;
+        if (value <= 25) return Math.ceil(value / 5) * 5;
+        const rough = value / 5;
+        const power = Math.pow(10, Math.floor(Math.log10(rough)));
+        const scaled = rough / power;
+        const step = scaled <= 1 ? 1 : scaled <= 2 ? 2 : scaled <= 5 ? 5 : 10;
+        return Math.ceil(value / (step * power)) * step * power;
+      }
+
+      function splitAssociateNames(value) {
+        return String(value || '').split(/\s*(?:,|;|&|\/|\n|\band\b)\s*/i).filter(Boolean).slice(0, 2);
+      }
+
+      function chartName(value) {
+        return value.length > 12 ? value.slice(0, 11) + '…' : value;
+      }
+
+      function renderChart(target, rows, label, emptyMessage = 'Enter cumulative readings to populate this chart.', showAssociates = false) {
+        const W = 760, H = showAssociates ? 430 : 390, L = 62, R = 62, T = 42, B = showAssociates ? 150 : 110;
+        const plotW = W - L - R, plotH = H - T - B;
+        const caseMax = niceMax(Math.max(...rows.map(row => row.cases)));
+        const palletMax = niceMax(Math.max(...rows.map(row => row.pallets)));
+        const slot = plotW / rows.length;
+        const barW = Math.min(28, slot * .34);
+        const parts = [`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${escapeText(label)}"><title>${escapeText(label)}</title>`];
+
+        parts.push(`<rect x="${W-150}" y="12" width="10" height="10" rx="2" fill="#168ee0"></rect><text class="chart-legend" x="${W-135}" y="21">Cases</text>`);
+        parts.push(`<rect x="${W-82}" y="12" width="10" height="10" rx="2" fill="#ffc220"></rect><text class="chart-legend" x="${W-67}" y="21">Pallets</text>`);
+
+        for (let i = 0; i <= 5; i++) {
+          const caseValue = caseMax * (5 - i) / 5;
+          const palletValue = palletMax * (5 - i) / 5;
+          const y = T + plotH * i / 5;
+          parts.push(`<line class="grid-line" x1="${L}" y1="${y}" x2="${W-R}" y2="${y}"></line>`);
+          parts.push(`<text class="axis-label" x="${L-10}" y="${y+4}" text-anchor="end">${fmt(caseValue)}</text>`);
+          parts.push(`<text class="axis-label pallet-axis" x="${W-R+10}" y="${y+4}" text-anchor="start">${fmt(palletValue)}</text>`);
+        }
+        parts.push(`<line class="axis-line" x1="${L}" y1="${T+plotH}" x2="${W-R}" y2="${T+plotH}"></line>`);
+        parts.push(`<line class="axis-line" x1="${W-R}" y1="${T}" x2="${W-R}" y2="${T+plotH}"></line>`);
+        parts.push(`<text class="axis-title" transform="translate(17 ${T+plotH/2}) rotate(-90)" text-anchor="middle">CASES</text>`);
+        parts.push(`<text class="axis-title pallet-axis" transform="translate(${W-10} ${T+plotH/2}) rotate(90)" text-anchor="middle">PALLETS</text>`);
+
+        rows.forEach((row, index) => {
+          const center = L + slot * index + slot / 2;
+          const caseHeight = row.cases ? row.cases / caseMax * plotH : 0;
+          const palletHeight = row.pallets ? row.pallets / palletMax * plotH : 0;
+          const caseY = T + plotH - caseHeight;
+          const palletY = T + plotH - palletHeight;
+          const errorClass = row.errors > 0 ? ' has-error' : '';
+          if (row.cases > 0) {
+            parts.push(`<g><title>Door ${row.door}: ${fmt(row.cases)} cases, ${fmt(row.pallets)} pallets, ${fmt(row.errors)} errors, ${pctText(row.errorRate)}, ${row.hours > 0 ? fmt(Math.round(row.cph)) + ' cases/hour' : 'cases/hour unavailable'}</title>`);
+            parts.push(`<rect class="case-bar" x="${center-barW-2}" y="${caseY}" width="${barW}" height="${caseHeight}" rx="4"></rect>`);
+            parts.push(`<text class="bar-value" x="${center-barW/2-2}" y="${Math.max(34, caseY-7)}" text-anchor="middle">${fmt(row.cases)}</text></g>`);
+          }
+          if (row.pallets > 0) {
+            parts.push(`<rect class="pallet-bar" x="${center+2}" y="${palletY}" width="${barW}" height="${palletHeight}" rx="4"><title>Door ${row.door}: ${fmt(row.pallets)} pallets</title></rect>`);
+            parts.push(`<text class="pallet-bar-value" x="${center+barW/2+2}" y="${Math.max(34, palletY-7)}" text-anchor="middle">${fmt(row.pallets)}</text>`);
+          }
+          parts.push(`<text class="door-label" x="${center}" y="${T+plotH+23}" text-anchor="middle">${row.door}</text>`);
+          parts.push(`<text class="error-label${errorClass}" x="${center}" y="${T+plotH+42}" text-anchor="middle">${pctText(row.errorRate)}</text>`);
+          parts.push(`<text class="pallet-label" x="${center}" y="${T+plotH+60}" text-anchor="middle">${fmt(row.pallets)}</text>`);
+          parts.push(`<text class="cph-label" x="${center}" y="${T+plotH+78}" text-anchor="middle">${row.hours > 0 ? fmt(Math.round(row.cph)) : '—'}</text>`);
+          if (showAssociates) {
+            splitAssociateNames(row.associate).forEach((name, line) => {
+              parts.push(`<text class="associate-label" x="${center}" y="${T+plotH+98+(line*16)}" text-anchor="middle">${escapeText(chartName(name))}</text>`);
+            });
+          }
+        });
+        parts.push(`<text class="axis-title" x="${L-15}" y="${T+plotH+23}" text-anchor="end">DOOR</text>`);
+        parts.push(`<text class="axis-title" x="${L-15}" y="${T+plotH+42}" text-anchor="end">ERROR %</text>`);
+        parts.push(`<text class="axis-title" x="${L-15}" y="${T+plotH+60}" text-anchor="end">PALLETS</text>`);
+        parts.push(`<text class="axis-title" x="${L-15}" y="${T+plotH+78}" text-anchor="end">CPH</text>`);
+        if (showAssociates) parts.push(`<text class="axis-title" x="${L-15}" y="${T+plotH+99}" text-anchor="end">ASSOC.</text>`);
+        parts.push('</svg>');
+        if (!rows.some(row => row.cases > 0 || row.pallets > 0)) parts.push(`<div class="chart-empty">${escapeText(emptyMessage)}</div>`);
+        target.innerHTML = parts.join('');
+      }
+
+      function carryCheckpointValuesForward(period) {
+        const periodIndex = PERIODS.indexOf(period);
+        if (periodIndex <= 0) return;
+        const day = currentDay();
+        let changed = false;
+        DOORS.forEach(door => {
+          const target = day[period][door];
+          for (let index = periodIndex - 1; index >= 0; index--) {
+            const prior = day[PERIODS[index]][door];
+            if (target.pallets === 0 && (prior.pallets > 0 || index === 0)) {
+              if (target.pallets !== prior.pallets) {
+                target.pallets = prior.pallets;
+                changed = true;
+              }
+            }
+            if (!target.associate && prior.associate) {
+              target.associate = prior.associate;
+              changed = true;
+            }
+            if ((target.pallets > 0 || index === 0) && (target.associate || index === 0)) break;
+          }
+        });
+        if (changed) save();
+      }
+
+      function renderTabs() {
+        const day = currentDay();
+        $('periodTabs').innerHTML = PERIODS.map(period => {
+          const filled = day._hours[period] > 0 || DOORS.some(door => day[period][door].cases > 0 || day[period][door].pallets > 0 || day[period][door].errors > 0 || day[period][door].notes);
+          return `<button type="button" role="tab" aria-selected="${activePeriod === period}" data-period="${period}" class="period-tab${activePeriod === period ? ' active' : ''}">${period}<span class="period-dot${filled ? ' filled' : ''}"></span></button>`;
+        }).join('');
+        document.querySelectorAll('.period-tab').forEach(button => button.addEventListener('click', () => {
+          activePeriod = button.dataset.period;
+          carryCheckpointValuesForward(activePeriod);
+          render();
+        }));
+      }
+
+      function renderTable(rows) {
+        $('entryRows').innerHTML = rows.map(row => {
+          const invalid = row.invalid;
+          const notesId = `notes-${activePeriod}-${row.door}`;
+          return `<tr class="entry-main-row${invalid ? ' invalid' : ''}">
+            <th scope="row"><span class="door-badge">${row.door}</span></th>
+            <td class="notes-cell"><button class="notes-toggle${row.notes.trim() ? ' has-note' : ''}" type="button" data-door="${row.door}" aria-expanded="false" aria-controls="${notesId}" aria-label="Open notes for door ${row.door}" title="Notes for door ${row.door}">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v13H8l-4 4V4Z"/><path d="M8 8h8M8 12h6"/></svg>
+            </button></td>
+            <td><input class="associate-input" type="text" maxlength="80" data-door="${row.door}" aria-label="Associate names for door ${row.door} at ${activePeriod}" value="${escapeText(row.associate)}" placeholder="Name 1, Name 2"></td>
+            <td><input class="number-input" type="number" min="0" step="1" inputmode="numeric" data-door="${row.door}" data-field="pallets" aria-label="Cumulative pallets reading for door ${row.door} at ${activePeriod}" value="${row.rawPallets || ''}" placeholder="0"></td>
+            <td><input class="number-input" type="number" min="0" step="1" inputmode="numeric" data-door="${row.door}" data-field="cases" aria-label="Cumulative cases reading for door ${row.door} at ${activePeriod}" value="${row.rawCases || ''}" placeholder="0"></td>
+            <td><input class="number-input" type="number" min="0" step="1" inputmode="numeric" data-door="${row.door}" data-field="errors" aria-invalid="${invalid}" aria-label="Cumulative errors reading for door ${row.door} at ${activePeriod}" value="${row.rawErrors || ''}" placeholder="0"></td>
+            <td><span class="rate-pill${row.errors ? ' has-error' : ''}">${pctText(row.errorRate)}</span></td>
+            <td><span class="rate-pill cph-pill">${row.hours > 0 ? fmt(Math.round(row.cph)) : '—'}</span></td>
+          </tr>
+          <tr id="${notesId}" class="notes-row" data-notes-row="${row.door}" hidden>
+            <td colspan="8"><div class="notes-panel">
+              <label class="notes-field">${activePeriod} notes for door ${row.door}
+                <textarea class="notes-input" maxlength="1000" data-door="${row.door}" aria-label="${activePeriod} notes for door ${row.door}" placeholder="Enter notes for this door and checkpoint…">${escapeText(row.notes)}</textarea>
+              </label>
+              <button class="notes-close" type="button" data-door="${row.door}">Close</button>
+            </div></td>
+          </tr>`;
+        }).join('');
+        document.querySelectorAll('.notes-toggle').forEach(button => button.addEventListener('click', () => {
+          const row = document.querySelector(`[data-notes-row="${button.dataset.door}"]`);
+          const willOpen = row.hidden;
+          document.querySelectorAll('.notes-row').forEach(noteRow => { noteRow.hidden = true; });
+          document.querySelectorAll('.notes-toggle').forEach(toggle => toggle.setAttribute('aria-expanded', 'false'));
+          row.hidden = !willOpen;
+          button.setAttribute('aria-expanded', String(willOpen));
+          if (willOpen) row.querySelector('.notes-input').focus();
+        }));
+        document.querySelectorAll('.notes-close').forEach(button => button.addEventListener('click', () => {
+          const row = document.querySelector(`[data-notes-row="${button.dataset.door}"]`);
+          const toggle = document.querySelector(`.notes-toggle[data-door="${button.dataset.door}"]`);
+          row.hidden = true;
+          toggle.setAttribute('aria-expanded', 'false');
+          toggle.focus();
+        }));
+        document.querySelectorAll('.notes-input').forEach(input => input.addEventListener('input', event => {
+          const el = event.currentTarget;
+          const value = el.value.slice(0, 1000);
+          currentDay()[activePeriod][el.dataset.door].notes = value;
+          document.querySelector(`.notes-toggle[data-door="${el.dataset.door}"]`).classList.toggle('has-note', Boolean(value.trim()));
+          save();
+        }));
+        document.querySelectorAll('.number-input').forEach(input => input.addEventListener('input', event => {
+          const el = event.currentTarget;
+          const value = Math.max(0, Math.floor(Number(el.value) || 0));
+          const day = currentDay();
+          const reading = day[activePeriod][el.dataset.door];
+          const oldValue = reading[el.dataset.field];
+          reading[el.dataset.field] = value;
+          if (el.dataset.field === 'pallets') {
+            const activeIndex = PERIODS.indexOf(activePeriod);
+            for (let index = activeIndex + 1; index < PERIODS.length; index++) {
+              const futureReading = day[PERIODS[index]][el.dataset.door];
+              if (futureReading.pallets === 0 || futureReading.pallets === oldValue) futureReading.pallets = value;
+              else break;
+            }
+          }
+          save();
+          render(false);
+        }));
+        document.querySelectorAll('.associate-input').forEach(input => input.addEventListener('input', event => {
+          const el = event.currentTarget;
+          const day = currentDay();
+          const reading = day[activePeriod][el.dataset.door];
+          const oldValue = reading.associate;
+          const value = el.value.slice(0, 80);
+          reading.associate = value;
+          const activeIndex = PERIODS.indexOf(activePeriod);
+          for (let index = activeIndex + 1; index < PERIODS.length; index++) {
+            const futureReading = day[PERIODS[index]][el.dataset.door];
+            if (!futureReading.associate || futureReading.associate === oldValue) futureReading.associate = value;
+            else break;
+          }
+          save();
+          render(false);
+        }));
+      }
+
+      function renderEntryTotals(rows) {
+        const readingTotals = rows.reduce((sum, row) => ({
+          cases: sum.cases + row.rawCases,
+          pallets: sum.pallets + row.rawPallets,
+          errors: sum.errors + row.rawErrors
+        }), { cases: 0, pallets: 0, errors: 0 });
+        const productionTotals = totals(rows);
+        const baseline = activePeriod === 'SOS';
+        const hours = rows[0]?.hours || 0;
+        $('entryTotals').innerHTML = `<tr>
+          <th scope="row">All doors</th>
+          <td>—</td>
+          <td>—</td>
+          <td>${fmt(readingTotals.pallets)}</td>
+          <td>${fmt(readingTotals.cases)}</td>
+          <td>${fmt(readingTotals.errors)}</td>
+          <td>${baseline ? '—' : pctText(pct(productionTotals.errors, productionTotals.cases))}</td>
+          <td>${!baseline && hours > 0 ? fmt(Math.round(productionTotals.cases / hours)) : '—'}</td>
+        </tr>`;
+      }
+
+      function renderValidation(rows) {
+        const count = rows.filter(row => row.invalid).length;
+        $('validation').classList.toggle('show', count > 0);
+        $('validation').querySelector('span').textContent = count ? `Check ${count} ${count === 1 ? 'door' : 'doors'}: cumulative readings cannot be lower than the previous checkpoint, and period errors cannot exceed period cases.` : '';
+      }
+
+      function render(rebuildTable = true) {
+        const period = periodRows(activePeriod);
+        const day = dayRows();
+        const activeHours = currentDay()._hours[activePeriod];
+        const totalHours = PERIODS.slice(1).reduce((sum, periodName) => sum + currentDay()._hours[periodName], 0);
+        const isBaseline = activePeriod === 'SOS';
+        $('periodChartTitle').textContent = isBaseline ? 'SOS baseline' : activePeriod + ' period';
+        $('entryTitle').textContent = isBaseline ? 'SOS baseline readings' : activePeriod + ' cumulative readings';
+        $('checkpointHelp').textContent = isBaseline ? 'SOS establishes the second-shift starting point.' : `${activePeriod} production is calculated from the previous available checkpoint.`;
+        $('entryHelp').textContent = isBaseline
+          ? 'Enter first-shift cumulative readings. Names and pallets carry forward; separate two names with a comma to stack them on the chart.'
+          : `Enter current cumulative readings. Names and pallets carry forward; separate two names with a comma to stack them on the chart.`;
+        $('hoursControl').classList.toggle('hidden', isBaseline);
+        $('periodHours').value = activeHours || '';
+        renderTabs();
+        renderSummary($('periodSummary'), period, isBaseline ? 0 : activeHours);
+        renderSummary($('daySummary'), day, totalHours);
+        renderChart(
+          $('periodChart'),
+          period,
+          isBaseline ? 'SOS baseline with no second-shift production counted' : `${activePeriod} second-shift cases, pallets, error percentages, and cases per hour by door`,
+          isBaseline ? 'SOS is the zero point. Production begins with the P1 reading.' : `Enter ${activePeriod} cumulative readings to calculate this period.`,
+          true
+        );
+        renderChart($('dayChart'), day, 'Second-shift cases, pallets, error percentages, and cases per hour since the SOS baseline', 'Enter a checkpoint after SOS to calculate second-shift production.');
+        renderValidation(period);
+        if (rebuildTable) renderTable(period);
+        else {
+          document.querySelectorAll('#entryRows .entry-main-row').forEach((tableRow, index) => {
+            const row = period[index];
+            const invalid = row.invalid;
+            const errorInput = tableRow.querySelector('[data-field="errors"]');
+            const ratePill = tableRow.querySelector('.rate-pill');
+            const cphPill = tableRow.querySelector('.cph-pill');
+            tableRow.classList.toggle('invalid', invalid);
+            errorInput.setAttribute('aria-invalid', String(invalid));
+            ratePill.textContent = pctText(row.errorRate);
+            ratePill.classList.toggle('has-error', row.errors > 0);
+            cphPill.textContent = row.hours > 0 ? fmt(Math.round(row.cph)) : '—';
+          });
+        }
+        renderEntryTotals(period);
+      }
+
+      function updateFullscreenButtons() {
+        document.querySelectorAll('.fullscreen-btn').forEach(button => {
+          const target = $(button.dataset.fullscreenTarget);
+          const active = document.fullscreenElement === target;
+          button.setAttribute('aria-label', active ? 'Exit chart full screen' : `Show ${target.id === 'periodCard' ? 'current chunk' : 'second-shift total'} chart full screen`);
+          button.title = active ? 'Exit full screen' : 'Full screen';
+          button.querySelector('svg').innerHTML = active
+            ? '<path d="M9 9H4V4M15 9h5V4M9 15H4v5M15 15h5v5"/>'
+            : '<path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/>';
+        });
+      }
+
+      document.querySelectorAll('.fullscreen-btn').forEach(button => button.addEventListener('click', async () => {
+        const target = $(button.dataset.fullscreenTarget);
+        try {
+          if (document.fullscreenElement === target) await document.exitFullscreen();
+          else {
+            if (document.fullscreenElement) await document.exitFullscreen();
+            await target.requestFullscreen();
+          }
+        } catch (_) {
+          $('toast').textContent = 'Full screen is not available in this browser.';
+          $('toast').classList.add('show');
+          setTimeout(() => $('toast').classList.remove('show'), 2200);
+        }
+      }));
+      document.addEventListener('fullscreenchange', updateFullscreenButtons);
+      updateFullscreenButtons();
+
+      $('periodHours').addEventListener('change', event => {
+        currentDay()._hours[activePeriod] = Math.max(0, Number(event.target.value) || 0);
+        save();
+        render(false);
+      });
+
+      $('workDate').value = workDate;
+      $('workDate').addEventListener('change', event => {
+        workDate = event.target.value || today();
+        activePeriod = 'SOS';
+        currentDay();
+        save();
+        render();
+      });
+
+      $('clearDay').addEventListener('click', () => {
+        if (confirm(`Clear all associate names, case, pallet, error, and hour entries for ${workDate}?`)) {
+          allDates[workDate] = blankDay();
+          activePeriod = 'SOS';
+          save();
+          render();
+          $('toast').classList.add('show');
+          setTimeout(() => $('toast').classList.remove('show'), 1600);
+        }
+      });
+
+      currentDay();
+      render();
+    })();
+  </script>
+</body>
+</html>

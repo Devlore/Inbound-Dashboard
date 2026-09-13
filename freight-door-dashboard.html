@@ -26,7 +26,7 @@
     * { box-sizing: border-box; }
     html { color-scheme: dark; font-family: Inter, Aptos, "Segoe UI", Arial, sans-serif; background: var(--page); }
     body { margin: 0; color: var(--ink); background: radial-gradient(circle at 50% -120px, #0b4770 0, #071d2c 38%, #061722 72%); }
-    button, input { font: inherit; }
+    button, input, select, textarea { font: inherit; }
     button { cursor: pointer; }
     .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 
@@ -154,12 +154,42 @@
     .number-input { width: min(170px, 100%); height: 36px; padding: 4px 10px; border: 1px solid #31566e; border-radius: 18px; color: var(--ink); background: #061a29; font-weight: 750; font-variant-numeric: tabular-nums; }
     .number-input:focus { outline: 3px solid rgba(0,113,220,.34); border-color: #3ba2ff; }
     .number-input[aria-invalid="true"] { border-color: var(--red); outline-color: rgba(200,69,53,.2); }
-    .associate-input { width: min(220px, 100%); height: 36px; padding: 4px 12px; border: 1px solid #31566e; border-radius: 18px; color: var(--ink); background: #061a29; font-weight: 700; }
-    .associate-input::placeholder { color: #6f899b; }
-    .associate-input:focus { outline: 3px solid rgba(0,113,220,.34); border-color: #3ba2ff; }
     .rate-pill { min-width: 65px; display: inline-block; padding: 6px 8px; border: 1px solid #2b4e65; border-radius: 999px; color: #adc0cf; background: #071d2d; text-align: center; font-size: 12px; font-weight: 850; font-variant-numeric: tabular-nums; }
     .rate-pill.has-error { color: #ffaaa3; border-color: #713a3b; background: #321c21; }
     .cph-pill { color: #83ccf8; border-color: #155786; background: #082c47; }
+
+    .associates-card { margin-top: 16px; }
+    .associate-table { min-width: 900px; }
+    .associate-table th:first-child { width: 26%; }
+    .associate-table th:last-child { width: 90px; }
+    .associate-name-input { width: 100%; height: 38px; padding: 5px 12px; border: 1px solid #31566e; border-radius: 19px; color: var(--ink); background: #061a29; font-weight: 750; }
+    .associate-name-input::placeholder { color: #6f899b; }
+    .associate-name-input:focus, .assignment-control:focus { outline: 3px solid rgba(0,113,220,.34); border-color: #3ba2ff; }
+    .assignment-toggle { min-height: 36px; display: inline-flex; align-items: center; gap: 7px; padding: 0 13px; border: 1px solid #36749f; border-radius: 18px; color: #dcefff; background: #083e68; font-size: 12px; font-weight: 800; }
+    .assignment-toggle:hover, .assignment-toggle[aria-expanded="true"] { background: #075ca8; }
+    .assignment-toggle svg { width: 15px; height: 15px; }
+    .assignment-summary { display: flex; flex-wrap: wrap; gap: 6px; }
+    .assignment-chip { display: inline-flex; align-items: center; gap: 5px; min-height: 28px; padding: 4px 9px; border: 1px solid #2a5876; border-radius: 14px; color: #c7e8ff; background: #082c47; font-size: 11px; font-weight: 750; }
+    .assignment-chip.ongoing { color: #b6f5db; border-color: #237456; background: #0b3529; }
+    .assignment-empty { color: #7892a5; font-size: 12px; }
+    .assignment-detail[hidden] { display: none; }
+    .assignment-detail > td { padding: 0 16px 16px; background: #0b2639; }
+    .assignment-panel { padding: 14px; border: 1px solid #31566e; border-radius: 12px; background: #061a29; box-shadow: inset 3px 0 0 #ffc220; }
+    .assignment-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+    .assignment-panel-head strong { font-size: 13px; }
+    .assignment-panel-head span { color: #8fa8ba; font-size: 11px; }
+    .assignment-item, .new-assignment { display: grid; grid-template-columns: 90px 90px 110px 150px 90px 110px auto; gap: 8px; align-items: end; padding: 10px; border: 1px solid #1d4058; border-radius: 10px; background: #0a2132; }
+    .assignment-item + .assignment-item { margin-top: 8px; }
+    .new-assignment { margin-top: 12px; border-color: #356a8d; background: #0d2d43; }
+    .assignment-field { display: grid; gap: 5px; color: #8fa8ba; font-size: 9px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
+    .assignment-control { width: 100%; height: 36px; padding: 4px 8px; border: 1px solid #31566e; border-radius: 8px; color: var(--ink); background: #041520; font-size: 12px; }
+    .assignment-control:disabled { color: #668092; background: #0a1d29; opacity: .65; }
+    .assignment-actions { display: flex; align-items: center; justify-content: flex-end; gap: 6px; min-height: 36px; }
+    .assignment-btn { min-height: 34px; padding: 0 11px; border: 1px solid #36749f; border-radius: 17px; color: #dcefff; background: #083e68; font-size: 11px; font-weight: 800; white-space: nowrap; }
+    .assignment-btn:hover { background: #075ca8; }
+    .assignment-btn.add { color: #092037; border-color: #ffc220; background: #ffc220; }
+    .assignment-btn.remove { width: 34px; padding: 0; color: #ffaaa3; border-color: #713a3b; background: #321c21; font-size: 17px; }
+    .assignment-btn:disabled { cursor: default; opacity: .45; }
     footer { padding: 0 20px 28px; color: #7892a5; text-align: center; font-size: 11px; }
 
     .toast { position: fixed; right: 18px; bottom: 18px; z-index: 10; transform: translateY(80px); padding: 10px 14px; border: 1px solid #338fdc; border-radius: 18px; color: white; background: #075ca8; box-shadow: 0 8px 24px rgba(0,0,0,.35); opacity: 0; transition: .2s ease; font-size: 12px; font-weight: 700; }
@@ -189,6 +219,9 @@
       .workspace { width: calc(100% - 20px); padding-top: 10px; }
       th, td { padding: 9px 8px; }
       table { min-width: 1020px; }
+      .associate-table { min-width: 900px; }
+      .assignment-item, .new-assignment { grid-template-columns: repeat(3, minmax(120px, 1fr)); }
+      .assignment-actions { justify-content: flex-start; }
     }
     @media print {
       :root { --ink: #10273c; --panel: #ffffff; --line: #d2dde5; }
@@ -289,9 +322,22 @@
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Door</th><th class="notes-cell">Notes</th><th>Associate</th><th>Pallets reading</th><th>Cases reading</th><th>Errors reading</th><th>Period error %</th><th>Period CPH</th></tr></thead>
+          <thead><tr><th>Door</th><th class="notes-cell">Notes</th><th>Pallets reading</th><th>Cases reading</th><th>Errors reading</th><th>Period error %</th><th>Period CPH</th></tr></thead>
           <tbody id="entryRows"></tbody>
           <tfoot id="entryTotals"></tfoot>
+        </table>
+      </div>
+    </section>
+
+    <section class="entry-card associates-card">
+      <div class="entry-head">
+        <div><p class="eyebrow">Staffing</p><h2>Associate assignments</h2></div>
+        <p>Enter up to 12 associates. Add as many door assignments as needed; an ongoing assignment carries into later periods until you end it.</p>
+      </div>
+      <div class="table-wrap">
+        <table class="associate-table">
+          <thead><tr><th>Associate name</th><th>Assignment in selected period</th><th>Assignment history</th><th>Manage</th></tr></thead>
+          <tbody id="associateRows"></tbody>
         </table>
       </div>
     </section>
@@ -306,11 +352,13 @@
 
       const DOORS = ['166', '167', '168', '169', '170', '171', '174', '175', '176'];
       const PERIODS = ['SOS', 'P1', 'P2', 'EOS'];
+      const WORK_PERIODS = ['P1', 'P2', 'EOS'];
       const STORAGE_KEY = 'freight-door-performance-v2';
       let activePeriod = 'SOS';
       let workDate = today();
       let allDates = loadAllDates();
       let saveTimer;
+      let openAssociateId = null;
 
       const $ = (id) => document.getElementById(id);
 
@@ -320,13 +368,33 @@
       }
 
       function blankDay() {
-        const day = { _hours: {} };
+        const day = { _hours: {}, associates: Array.from({ length: 12 }, (_, index) => ({ id: `associate-${index + 1}`, name: '', assignments: [] })) };
         PERIODS.forEach(period => {
           day._hours[period] = 0;
           day[period] = {};
-          DOORS.forEach(door => day[period][door] = { associate: '', notes: '', cases: 0, pallets: 0, errors: 0 });
+          DOORS.forEach(door => day[period][door] = { notes: '', cases: 0, pallets: 0, errors: 0 });
         });
         return day;
+      }
+
+      function assignmentId() {
+        return `assignment-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+      }
+
+      function normalizeAssignment(raw) {
+        const startPeriod = WORK_PERIODS.includes(raw && raw.startPeriod) ? raw.startPeriod : 'P1';
+        const mode = ['ongoing', 'whole', 'timed'].includes(raw && raw.mode) ? raw.mode : 'ongoing';
+        const requestedEnd = WORK_PERIODS.includes(raw && raw.endPeriod) ? raw.endPeriod : startPeriod;
+        const endPeriod = WORK_PERIODS.indexOf(requestedEnd) < WORK_PERIODS.indexOf(startPeriod) ? startPeriod : requestedEnd;
+        return {
+          id: typeof raw?.id === 'string' ? raw.id : assignmentId(),
+          door: DOORS.includes(raw && raw.door) ? raw.door : DOORS[0],
+          startPeriod,
+          startTime: typeof raw?.startTime === 'string' ? raw.startTime.slice(0, 5) : '',
+          mode,
+          endPeriod: mode === 'timed' ? endPeriod : '',
+          endTime: mode === 'timed' && typeof raw?.endTime === 'string' ? raw.endTime.slice(0, 5) : ''
+        };
       }
 
       function normalizeDay(raw) {
@@ -337,7 +405,6 @@
             const reading = raw && raw[period] && raw[period][door];
             if (reading) {
               day[period][door] = {
-                associate: typeof reading.associate === 'string' ? reading.associate.slice(0, 80) : '',
                 notes: typeof reading.notes === 'string' ? reading.notes.slice(0, 1000) : '',
                 cases: Math.max(0, Math.floor(Number(reading.cases) || 0)),
                 pallets: Math.max(0, Math.floor(Number(reading.pallets) || 0)),
@@ -346,6 +413,28 @@
             }
           });
         });
+
+        if (Array.isArray(raw && raw.associates)) {
+          day.associates = raw.associates.slice(0, 12).map((associate, index) => ({
+            id: typeof associate?.id === 'string' ? associate.id : `associate-${index + 1}`,
+            name: typeof associate?.name === 'string' ? associate.name.slice(0, 80) : '',
+            assignments: Array.isArray(associate?.assignments) ? associate.assignments.map(normalizeAssignment) : []
+          }));
+          while (day.associates.length < 12) day.associates.push({ id: `associate-${day.associates.length + 1}`, name: '', assignments: [] });
+        } else {
+          const migrated = new Map();
+          PERIODS.forEach(period => DOORS.forEach(door => {
+            const legacy = raw && raw[period] && raw[period][door] && raw[period][door].associate;
+            splitAssociateNames(legacy).forEach(name => {
+              const key = name.toLowerCase();
+              if (!migrated.has(key) && migrated.size < 12) migrated.set(key, { id: `associate-${migrated.size + 1}`, name, assignments: [] });
+              const associate = migrated.get(key);
+              if (associate) associate.assignments.push(normalizeAssignment({ id: `legacy-${period}-${door}-${associate.id}`, door, startPeriod: period === 'SOS' ? 'P1' : period, mode: 'whole' }));
+            });
+          }));
+          day.associates = [...migrated.values()];
+          while (day.associates.length < 12) day.associates.push({ id: `associate-${day.associates.length + 1}`, name: '', assignments: [] });
+        }
         return day;
       }
 
@@ -382,6 +471,21 @@
       function fmt(value) { return Number(value).toLocaleString(); }
       function escapeText(value) { return String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
+      function assignmentCoversPeriod(assignment, period) {
+        const periodIndex = WORK_PERIODS.indexOf(period);
+        const startIndex = WORK_PERIODS.indexOf(assignment.startPeriod);
+        if (periodIndex < 0 || startIndex < 0) return false;
+        if (assignment.mode === 'whole') return periodIndex === startIndex;
+        if (assignment.mode === 'ongoing') return periodIndex >= startIndex;
+        return periodIndex >= startIndex && periodIndex <= WORK_PERIODS.indexOf(assignment.endPeriod || assignment.startPeriod);
+      }
+
+      function associateNamesForDoor(day, period, door) {
+        return day.associates
+          .filter(associate => associate.name.trim() && associate.assignments.some(assignment => assignment.door === door && assignmentCoversPeriod(assignment, period)))
+          .map(associate => associate.name.trim());
+      }
+
       function periodRows(period) {
         const day = currentDay();
         const hours = day._hours[period];
@@ -412,7 +516,7 @@
           const invalid = baseline ? reading.errors > reading.cases : invalidDelta || errors > cases;
           return {
             door,
-            associate: reading.associate,
+            associate: associateNamesForDoor(day, period, door).join(', '),
             notes: reading.notes,
             rawCases: reading.cases,
             rawPallets: reading.pallets,
@@ -563,11 +667,7 @@
                 changed = true;
               }
             }
-            if (!target.associate && prior.associate) {
-              target.associate = prior.associate;
-              changed = true;
-            }
-            if ((target.pallets > 0 || index === 0) && (target.associate || index === 0)) break;
+            if (target.pallets > 0 || index === 0) break;
           }
         });
         if (changed) save();
@@ -576,7 +676,7 @@
       function renderTabs() {
         const day = currentDay();
         $('periodTabs').innerHTML = PERIODS.map(period => {
-          const filled = day._hours[period] > 0 || DOORS.some(door => day[period][door].cases > 0 || day[period][door].pallets > 0 || day[period][door].errors > 0 || day[period][door].notes);
+          const filled = day._hours[period] > 0 || DOORS.some(door => day[period][door].cases > 0 || day[period][door].pallets > 0 || day[period][door].errors > 0 || day[period][door].notes) || day.associates.some(associate => associate.assignments.some(assignment => assignmentCoversPeriod(assignment, period)));
           return `<button type="button" role="tab" aria-selected="${activePeriod === period}" data-period="${period}" class="period-tab${activePeriod === period ? ' active' : ''}">${period}<span class="period-dot${filled ? ' filled' : ''}"></span></button>`;
         }).join('');
         document.querySelectorAll('.period-tab').forEach(button => button.addEventListener('click', () => {
@@ -595,7 +695,6 @@
             <td class="notes-cell"><button class="notes-toggle${row.notes.trim() ? ' has-note' : ''}" type="button" data-door="${row.door}" aria-expanded="false" aria-controls="${notesId}" aria-label="Open notes for door ${row.door}" title="Notes for door ${row.door}">
               <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v13H8l-4 4V4Z"/><path d="M8 8h8M8 12h6"/></svg>
             </button></td>
-            <td><input class="associate-input" type="text" maxlength="80" data-door="${row.door}" aria-label="Associate names for door ${row.door} at ${activePeriod}" value="${escapeText(row.associate)}" placeholder="Name 1, Name 2"></td>
             <td><input class="number-input" type="number" min="0" step="1" inputmode="numeric" data-door="${row.door}" data-field="pallets" aria-label="Cumulative pallets reading for door ${row.door} at ${activePeriod}" value="${row.rawPallets || ''}" placeholder="0"></td>
             <td><input class="number-input" type="number" min="0" step="1" inputmode="numeric" data-door="${row.door}" data-field="cases" aria-label="Cumulative cases reading for door ${row.door} at ${activePeriod}" value="${row.rawCases || ''}" placeholder="0"></td>
             <td><input class="number-input" type="number" min="0" step="1" inputmode="numeric" data-door="${row.door}" data-field="errors" aria-invalid="${invalid}" aria-label="Cumulative errors reading for door ${row.door} at ${activePeriod}" value="${row.rawErrors || ''}" placeholder="0"></td>
@@ -603,7 +702,7 @@
             <td><span class="rate-pill cph-pill">${row.hours > 0 ? fmt(Math.round(row.cph)) : '—'}</span></td>
           </tr>
           <tr id="${notesId}" class="notes-row" data-notes-row="${row.door}" hidden>
-            <td colspan="8"><div class="notes-panel">
+            <td colspan="7"><div class="notes-panel">
               <label class="notes-field">${activePeriod} notes for door ${row.door}
                 <textarea class="notes-input" maxlength="1000" data-door="${row.door}" aria-label="${activePeriod} notes for door ${row.door}" placeholder="Enter notes for this door and checkpoint…">${escapeText(row.notes)}</textarea>
               </label>
@@ -652,21 +751,161 @@
           save();
           render(false);
         }));
-        document.querySelectorAll('.associate-input').forEach(input => input.addEventListener('input', event => {
-          const el = event.currentTarget;
-          const day = currentDay();
-          const reading = day[activePeriod][el.dataset.door];
-          const oldValue = reading.associate;
-          const value = el.value.slice(0, 80);
-          reading.associate = value;
-          const activeIndex = PERIODS.indexOf(activePeriod);
-          for (let index = activeIndex + 1; index < PERIODS.length; index++) {
-            const futureReading = day[PERIODS[index]][el.dataset.door];
-            if (!futureReading.associate || futureReading.associate === oldValue) futureReading.associate = value;
-            else break;
-          }
+      }
+
+      function optionHtml(values, selected) {
+        return values.map(value => `<option value="${value}"${value === selected ? ' selected' : ''}>${value}</option>`).join('');
+      }
+
+      function assignmentText(assignment) {
+        if (assignment.mode === 'whole') return `${assignment.startPeriod} · entire period`;
+        const start = `${assignment.startPeriod}${assignment.startTime ? ' ' + assignment.startTime : ''}`;
+        if (assignment.mode === 'ongoing') return `${start} → ongoing`;
+        return `${start} → ${assignment.endPeriod || assignment.startPeriod}${assignment.endTime ? ' ' + assignment.endTime : ''}`;
+      }
+
+      function nowTime() {
+        const now = new Date();
+        return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      }
+
+      function renderAssociates() {
+        const day = currentDay();
+        $('associateRows').innerHTML = day.associates.map((associate, index) => {
+          const detailId = `associate-detail-${index + 1}`;
+          const open = associate.id === openAssociateId;
+          const activeAssignments = activePeriod === 'SOS' ? [] : associate.assignments.filter(assignment => assignmentCoversPeriod(assignment, activePeriod));
+          const summary = activeAssignments.length
+            ? `<div class="assignment-summary">${activeAssignments.map(assignment => `<span class="assignment-chip${assignment.mode === 'ongoing' ? ' ongoing' : ''}">Door ${assignment.door} · ${escapeText(assignmentText(assignment))}</span>`).join('')}</div>`
+            : `<span class="assignment-empty">${activePeriod === 'SOS' ? 'Assignments begin with P1' : `Not assigned in ${activePeriod}`}</span>`;
+          const ongoingCount = associate.assignments.filter(assignment => assignment.mode === 'ongoing').length;
+          const items = associate.assignments.length
+            ? associate.assignments.map(assignment => {
+                const timed = assignment.mode === 'timed';
+                const whole = assignment.mode === 'whole';
+                return `<div class="assignment-item" data-assignment-id="${assignment.id}">
+                  <label class="assignment-field">Door<select class="assignment-control assignment-edit" data-field="door">${optionHtml(DOORS, assignment.door)}</select></label>
+                  <label class="assignment-field">Start period<select class="assignment-control assignment-edit" data-field="startPeriod">${optionHtml(WORK_PERIODS, assignment.startPeriod)}</select></label>
+                  <label class="assignment-field">Start time<input class="assignment-control assignment-edit" data-field="startTime" type="time" value="${assignment.startTime}"${whole ? ' disabled' : ''}></label>
+                  <label class="assignment-field">Length<select class="assignment-control assignment-edit" data-field="mode"><option value="ongoing"${assignment.mode === 'ongoing' ? ' selected' : ''}>Until ended</option><option value="whole"${whole ? ' selected' : ''}>Entire period</option><option value="timed"${timed ? ' selected' : ''}>Start / end time</option></select></label>
+                  <label class="assignment-field">End period<select class="assignment-control assignment-edit" data-field="endPeriod"${timed ? '' : ' disabled'}>${optionHtml(WORK_PERIODS, assignment.endPeriod || assignment.startPeriod)}</select></label>
+                  <label class="assignment-field">End time<input class="assignment-control assignment-edit" data-field="endTime" type="time" value="${assignment.endTime}"${timed ? '' : ' disabled'}></label>
+                  <div class="assignment-actions">${assignment.mode === 'ongoing' ? '<button class="assignment-btn end-assignment" type="button">End now</button>' : ''}<button class="assignment-btn remove remove-assignment" type="button" aria-label="Remove assignment" title="Remove assignment">×</button></div>
+                </div>`;
+              }).join('')
+            : '<p class="assignment-empty">No assignments recorded yet.</p>';
+          const defaultStart = activePeriod === 'SOS' ? 'P1' : activePeriod;
+          return `<tr class="associate-main-row">
+            <td><input class="associate-name-input" type="text" maxlength="80" data-associate-id="${associate.id}" aria-label="Associate ${index + 1} name" value="${escapeText(associate.name)}" placeholder="Associate ${index + 1} name"></td>
+            <td>${summary}</td>
+            <td><span class="assignment-empty">${associate.assignments.length} ${associate.assignments.length === 1 ? 'assignment' : 'assignments'}${ongoingCount ? ` · ${ongoingCount} ongoing` : ''}</span></td>
+            <td><button class="assignment-toggle" type="button" data-associate-id="${associate.id}" aria-expanded="${open}" aria-controls="${detailId}">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>Assign
+            </button></td>
+          </tr>
+          <tr id="${detailId}" class="assignment-detail" data-associate-id="${associate.id}"${open ? '' : ' hidden'}>
+            <td colspan="4"><div class="assignment-panel">
+              <div class="assignment-panel-head"><div><strong>${escapeText(associate.name.trim() || `Associate ${index + 1}`)}</strong><br><span>Assignments may span periods until an end is recorded.</span></div><button class="assignment-btn close-assignments" type="button">Close</button></div>
+              <div class="assignment-list">${items}</div>
+              <div class="new-assignment">
+                <label class="assignment-field">Door<select class="assignment-control" data-new-field="door">${optionHtml(DOORS, DOORS[0])}</select></label>
+                <label class="assignment-field">Start period<select class="assignment-control" data-new-field="startPeriod">${optionHtml(WORK_PERIODS, defaultStart)}</select></label>
+                <label class="assignment-field">Start time<input class="assignment-control" data-new-field="startTime" type="time"></label>
+                <label class="assignment-field">Length<select class="assignment-control new-mode" data-new-field="mode"><option value="ongoing">Until ended</option><option value="whole">Entire period</option><option value="timed">Start / end time</option></select></label>
+                <label class="assignment-field">End period<select class="assignment-control" data-new-field="endPeriod" disabled>${optionHtml(WORK_PERIODS, defaultStart)}</select></label>
+                <label class="assignment-field">End time<input class="assignment-control" data-new-field="endTime" type="time" disabled></label>
+                <div class="assignment-actions"><button class="assignment-btn add add-assignment" type="button">Add assignment</button></div>
+              </div>
+            </div></td>
+          </tr>`;
+        }).join('');
+
+        document.querySelectorAll('.associate-name-input').forEach(input => input.addEventListener('input', event => {
+          const associate = currentDay().associates.find(item => item.id === event.currentTarget.dataset.associateId);
+          associate.name = event.currentTarget.value.slice(0, 80);
           save();
           render(false);
+        }));
+
+        document.querySelectorAll('.assignment-toggle').forEach(button => button.addEventListener('click', () => {
+          openAssociateId = openAssociateId === button.dataset.associateId ? null : button.dataset.associateId;
+          renderAssociates();
+        }));
+
+        document.querySelectorAll('.close-assignments').forEach(button => button.addEventListener('click', () => {
+          openAssociateId = null;
+          renderAssociates();
+        }));
+
+        document.querySelectorAll('.new-mode').forEach(select => select.addEventListener('change', event => {
+          const row = event.currentTarget.closest('.new-assignment');
+          const timed = event.currentTarget.value === 'timed';
+          const whole = event.currentTarget.value === 'whole';
+          row.querySelector('[data-new-field="startTime"]').disabled = whole;
+          row.querySelector('[data-new-field="endPeriod"]').disabled = !timed;
+          row.querySelector('[data-new-field="endTime"]').disabled = !timed;
+        }));
+
+        document.querySelectorAll('.add-assignment').forEach(button => button.addEventListener('click', () => {
+          const detail = button.closest('.assignment-detail');
+          const associate = currentDay().associates.find(item => item.id === detail.dataset.associateId);
+          if (!associate.name.trim()) {
+            $('toast').textContent = 'Enter the associate name first.';
+            $('toast').classList.add('show');
+            setTimeout(() => $('toast').classList.remove('show'), 1800);
+            document.querySelector(`.associate-name-input[data-associate-id="${associate.id}"]`).focus();
+            return;
+          }
+          const row = button.closest('.new-assignment');
+          const read = field => row.querySelector(`[data-new-field="${field}"]`).value;
+          const startPeriod = read('startPeriod');
+          const startTime = read('startTime');
+          associate.assignments.filter(assignment => assignment.mode === 'ongoing').forEach(assignment => {
+            assignment.mode = 'timed';
+            assignment.endPeriod = WORK_PERIODS.indexOf(startPeriod) < WORK_PERIODS.indexOf(assignment.startPeriod) ? assignment.startPeriod : startPeriod;
+            assignment.endTime = startTime;
+          });
+          associate.assignments.push(normalizeAssignment({ id: assignmentId(), door: read('door'), startPeriod, startTime, mode: read('mode'), endPeriod: read('endPeriod'), endTime: read('endTime') }));
+          save();
+          render(false);
+          renderAssociates();
+        }));
+
+        document.querySelectorAll('.assignment-edit').forEach(control => control.addEventListener('change', event => {
+          const detail = event.currentTarget.closest('.assignment-detail');
+          const item = event.currentTarget.closest('.assignment-item');
+          const associate = currentDay().associates.find(entry => entry.id === detail.dataset.associateId);
+          const assignment = associate.assignments.find(entry => entry.id === item.dataset.assignmentId);
+          assignment[event.currentTarget.dataset.field] = event.currentTarget.value;
+          const normalized = normalizeAssignment(assignment);
+          Object.assign(assignment, normalized);
+          save();
+          render(false);
+          renderAssociates();
+        }));
+
+        document.querySelectorAll('.end-assignment').forEach(button => button.addEventListener('click', () => {
+          const detail = button.closest('.assignment-detail');
+          const item = button.closest('.assignment-item');
+          const associate = currentDay().associates.find(entry => entry.id === detail.dataset.associateId);
+          const assignment = associate.assignments.find(entry => entry.id === item.dataset.assignmentId);
+          assignment.mode = 'timed';
+          assignment.endPeriod = activePeriod === 'SOS' || WORK_PERIODS.indexOf(activePeriod) < WORK_PERIODS.indexOf(assignment.startPeriod) ? assignment.startPeriod : activePeriod;
+          assignment.endTime = nowTime();
+          save();
+          render(false);
+          renderAssociates();
+        }));
+
+        document.querySelectorAll('.remove-assignment').forEach(button => button.addEventListener('click', () => {
+          const detail = button.closest('.assignment-detail');
+          const item = button.closest('.assignment-item');
+          const associate = currentDay().associates.find(entry => entry.id === detail.dataset.associateId);
+          if (!confirm('Remove this door assignment?')) return;
+          associate.assignments = associate.assignments.filter(entry => entry.id !== item.dataset.assignmentId);
+          save();
+          render(false);
+          renderAssociates();
         }));
       }
 
@@ -681,7 +920,6 @@
         const hours = rows[0]?.hours || 0;
         $('entryTotals').innerHTML = `<tr>
           <th scope="row">All doors</th>
-          <td>—</td>
           <td>—</td>
           <td>${fmt(readingTotals.pallets)}</td>
           <td>${fmt(readingTotals.cases)}</td>
@@ -707,8 +945,8 @@
         $('entryTitle').textContent = isBaseline ? 'SOS baseline readings' : activePeriod + ' cumulative readings';
         $('checkpointHelp').textContent = isBaseline ? 'SOS establishes the second-shift starting point.' : `${activePeriod} production is calculated from the previous available checkpoint.`;
         $('entryHelp').textContent = isBaseline
-          ? 'Enter first-shift cumulative readings. Names and pallets carry forward; separate two names with a comma to stack them on the chart.'
-          : `Enter current cumulative readings. Names and pallets carry forward; separate two names with a comma to stack them on the chart.`;
+          ? 'Enter first-shift cumulative readings. These establish the baseline; pallet readings carry forward.'
+          : `Enter current cumulative readings. Pallet readings carry forward from the previous checkpoint.`;
         $('hoursControl').classList.toggle('hidden', isBaseline);
         $('periodHours').value = activeHours || '';
         renderTabs();
@@ -723,7 +961,10 @@
         );
         renderChart($('dayChart'), day, 'Second-shift cases, pallets, error percentages, and cases per hour since the SOS baseline', 'Enter a checkpoint after SOS to calculate second-shift production.');
         renderValidation(period);
-        if (rebuildTable) renderTable(period);
+        if (rebuildTable) {
+          renderTable(period);
+          renderAssociates();
+        }
         else {
           document.querySelectorAll('#entryRows .entry-main-row').forEach((tableRow, index) => {
             const row = period[index];
@@ -780,15 +1021,17 @@
       $('workDate').addEventListener('change', event => {
         workDate = event.target.value || today();
         activePeriod = 'SOS';
+        openAssociateId = null;
         currentDay();
         save();
         render();
       });
 
       $('clearDay').addEventListener('click', () => {
-        if (confirm(`Clear all associate names, case, pallet, error, and hour entries for ${workDate}?`)) {
+        if (confirm(`Clear all associate assignments, notes, case, pallet, error, and hour entries for ${workDate}?`)) {
           allDates[workDate] = blankDay();
           activePeriod = 'SOS';
+          openAssociateId = null;
           save();
           render();
           $('toast').classList.add('show');
@@ -802,3 +1045,4 @@
   </script>
 </body>
 </html>
+

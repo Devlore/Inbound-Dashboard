@@ -6,6 +6,6 @@ The dashboard records SOS, P1, P2, and EOS readings; cases, pallets, errors, cas
 
 ## Run locally
 
-Open `outputs/freight-door-dashboard.html` in a modern browser.
+Download and open `freight-door-dashboard.html` in a modern browser.
 
 No build step or server is required. Dashboard data remains in that browser's local storage.

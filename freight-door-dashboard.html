@@ -488,7 +488,7 @@
       }
 
       function renderChart(target, rows, label, emptyMessage = 'Enter cumulative readings to populate this chart.', showAssociates = false) {
-        const W = 760, H = showAssociates ? 430 : 390, L = 62, R = 62, T = 42, B = showAssociates ? 150 : 110;
+        const W = 760, H = showAssociates ? 430 : 390, L = 88, R = 62, T = 42, B = showAssociates ? 150 : 110;
         const plotW = W - L - R, plotH = H - T - B;
         const caseMax = niceMax(Math.max(...rows.map(row => row.cases)));
         const palletMax = niceMax(Math.max(...rows.map(row => row.pallets)));
